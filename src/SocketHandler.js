@@ -57,6 +57,7 @@ module.exports = function (MsrpSdk) {
     const onSocketConnected = function () {
       socketInfo = getSocketInfo(socket);
       socket.socketInfo = socketInfo;
+      socket.remoteAddressPort = `${socket.remoteAddress}:${socket.remotePort}`;
       connectedSockets.add(socket);
       pendingAssociations.set(socket, Date.now());
       startSocketsAudit();
@@ -699,5 +700,21 @@ module.exports = function (MsrpSdk) {
     }, AUDIT_INTERVAL);
   }
 
+  // Expose SocketHandler in MsrpSdk
   MsrpSdk.SocketHandler = SocketHandler;
+
+  /**
+   * Get a connected socket for a given remote address and port.
+   *
+   * @param {object} remoteServer The remote connection info.
+   * @return {object} A connected socket, if found.
+   */
+  MsrpSdk.getConnectedSocket = function (remoteServer) {
+    for (const s of connectedSockets.values()) {
+      if (s.remoteAddressPort === remoteServer) {
+        return s;
+      }
+    }
+    return null;
+  };
 };
