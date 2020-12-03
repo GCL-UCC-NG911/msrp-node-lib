@@ -15,6 +15,8 @@ module.exports = function (MsrpSdk) {
   const CONN_REFUSED_INTERVAL = 100;
   const BLOCKED_DURATION = 1000;
 
+  const SETUP_VALUES = ['active', 'actpass', 'passive'];
+
   const connRefusedMap = new Map();
   const blockedServers = new Map();
 
@@ -87,7 +89,7 @@ module.exports = function (MsrpSdk) {
       return this.remoteSdp.media.map(remoteMedia => {
         if (remoteMedia.isMsrp()) {
           const remoteSetup = remoteMedia.getAttributeValue('setup');
-          localMsrpMedia.setAttribute('setup', remoteSetup === 'passive' ? 'active' : 'passive');
+          localMsrpMedia.setAttribute('setup', remoteSetup === 'active' || remoteSetup === 'actpass' ? 'passive' : 'active');
           return localMsrpMedia;
         }
         // Create corresponding SdpMedia with port 0
@@ -398,14 +400,16 @@ module.exports = function (MsrpSdk) {
           }
           if (this.localSdp === localSdp) {
             // Add new media description for MSRP at the end
-            msrpMedia.setAttribute('setup', this.connectionSetup);
             this.localSdp.media.push(msrpMedia);
           }
         }
 
-        // If this is an SDP Answer OR is the first SDP Offer then set the local media descriptions
         if (!this.setHasNotRan || !localSdp.media.length) {
+          // This is an SDP Answer OR is the first SDP Offer, so set the local media descriptions
           localSdp.media = this._getMediaDescriptions(msrpMedia);
+        } else {
+          // This is a new SDP Offer. Set setup attribute based on config.
+          msrpMedia.setAttribute('setup', MsrpSdk.Config.setup);
         }
 
         this.getHasNotRan = false;
@@ -478,10 +482,15 @@ module.exports = function (MsrpSdk) {
         }
 
         const setup = msrpMedia.getAttributeValue('setup');
-        if (setup && !['active', 'actpass', 'passive'].includes(setup)) {
+        if (setup && !SETUP_VALUES.includes(setup)) {
           MsrpSdk.Logger.error('[Session]: Invalid remote a=setup value');
           reject('Invalid remote a=setup value');
           return;
+        }
+
+        if (!this.getHasNotRan && setup !== 'active') {
+          // This is an SDP Answer and setup is not 'active'. This means we must start the connection.
+          this.connectionSetup = 'active';
         }
 
         this.setHasNotRan = false;

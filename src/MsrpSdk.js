@@ -48,7 +48,7 @@ module.exports = function (config, logger) {
     reuseClientSocket: !!config.reuseClientSocket,
     port: config.port || 2855,
     sessionName: config.sessionName || '-',
-    setup: config.setup === 'passive' ? 'passive' : 'active',
+    setup: config.setup === 'passive' || config.setup === 'actpass' ? config.setup : 'active',
     signalingHost: config.signalingHost || config.host || '127.0.0.1',
     socketTimeout: Math.floor(config.socketTimeout) || 0,
     traceMsrp: !!config.traceMsrp
