@@ -341,15 +341,17 @@ module.exports = function (MsrpSdk) {
       // Return successful response: 200 OK
       sendResponse(request, socket, toUri.uri, MsrpSdk.Status.OK);
 
-      // Emit 'message' event. Do not emit it for heartbeat messages or bodiless messages.
       const isHeartbeatMessage = request.contentType === 'text/x-msrp-heartbeat';
       const isBodilessMessage = !request.body;
+      // Emit 'message' event asynchronously. Do not emit it for heartbeat messages or bodiless messages.
       if (!isHeartbeatMessage && !isBodilessMessage) {
-        try {
-          session.emit('message', request, session);
-        } catch (err) {
-          MsrpSdk.Logger.error('[SocketHandler]: Error raising "message" event.', err);
-        }
+        setImmediate(() => {
+          try {
+            session.emit('message', request, session);
+          } catch (err) {
+            MsrpSdk.Logger.error('[SocketHandler]: Error raising "message" event.', err);
+          }
+        });
       }
       return;
     }
@@ -409,12 +411,14 @@ module.exports = function (MsrpSdk) {
     // Return successful response: 200 OK
     sendResponse(request, socket, toUri.uri, MsrpSdk.Status.OK);
 
-    // Emit 'message' event including the complete message
-    try {
-      session.emit('message', request, session);
-    } catch (err) {
-      MsrpSdk.Logger.error('[SocketHandler]: Error raising "message" event.', err);
-    }
+    // Emit 'message' event asynchronously including the complete message.
+    setImmediate(() => {
+      try {
+        session.emit('message', request, session);
+      } catch (err) {
+        MsrpSdk.Logger.error('[SocketHandler]: Error raising "message" event.', err);
+      }
+    });
   }
 
   /**
