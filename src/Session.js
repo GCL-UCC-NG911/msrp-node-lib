@@ -381,8 +381,6 @@ module.exports = function (MsrpSdk) {
           // This is a new session. Create new Sdp and SdpMedia objetcs.
           localSdp = new MsrpSdk.Sdp();
           // Origin
-          localSdp.origin.id = MsrpSdk.Util.dateToNtpTime();
-          localSdp.origin.version = 1;
           localSdp.origin.address = MsrpSdk.Config.signalingHost;
           // Session-name
           localSdp.sessionName = MsrpSdk.Config.sessionName;

@@ -30,8 +30,8 @@ module.exports = function (MsrpSdk) {
 
     reset() {
       this.username = '-';
-      this.id = MsrpSdk.Util.dateToNtpTime();
-      this.version = this.id;
+      this.id = Date.now();
+      this.version = 1;
       this.netType = 'IN';
       this.addrType = 'IP4';
       this.address = 'address.invalid';
