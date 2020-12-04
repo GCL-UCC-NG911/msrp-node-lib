@@ -368,7 +368,8 @@ module.exports = function (MsrpSdk) {
       return new Promise((resolve, reject) => {
         let localSdp, msrpMedia;
 
-        MsrpSdk.Logger.debug('[Session]: Creating local SDP...');
+        const isSdpAnswer = !this.setHasNotRan;
+        MsrpSdk.Logger.debug(`[Session]: Creating local SDP ${isSdpAnswer ? 'Answer' : 'Offer'}`);
 
         if (this.localSdp) {
           // This is an existing session
@@ -402,7 +403,7 @@ module.exports = function (MsrpSdk) {
           }
         }
 
-        if (!this.setHasNotRan || !localSdp.media.length) {
+        if (isSdpAnswer || !localSdp.media.length) {
           // This is an SDP Answer OR is the first SDP Offer, so set the local media descriptions
           localSdp.media = this._getMediaDescriptions(msrpMedia);
         } else {
@@ -416,6 +417,11 @@ module.exports = function (MsrpSdk) {
 
         if (this.socket && !this.socket.destroyed) {
           MsrpSdk.Logger.debug('[Session]: Session already has an active connection. Just resolve new local description.');
+          if (isSdpAnswer) {
+            // Reset SDP negotiation flags
+            this.setHasNotRan = true;
+            this.getHasNotRan = true;
+          }
           resolve(localSdp.toString());
           return;
         }
@@ -453,7 +459,8 @@ module.exports = function (MsrpSdk) {
      */
     setDescription(description) {
       return new Promise((resolve, reject) => {
-        MsrpSdk.Logger.debug('[Session]: Processing remote SDP...');
+        const isSdpAnswer = !this.getHasNotRan;
+        MsrpSdk.Logger.debug(`[Session]: Setting remote SDP ${isSdpAnswer ? 'Answer' : 'Offer'}`);
 
         // Parse received SDP
         const remoteSdp = new MsrpSdk.Sdp(description);
@@ -486,7 +493,7 @@ module.exports = function (MsrpSdk) {
           return;
         }
 
-        if (!this.getHasNotRan && setup !== 'active') {
+        if (isSdpAnswer && setup !== 'active') {
           // This is an SDP Answer and setup is not 'active'. This means we must start the connection.
           this.connectionSetup = 'active';
         }
@@ -503,6 +510,7 @@ module.exports = function (MsrpSdk) {
         } else {
           const remoteEndpoints = path.split(/\s+/);
           if (this._needsReconnection(remoteEndpoints)) {
+            MsrpSdk.Logger.info('[Session]: A socket reconnection is required for this session. Close the existing socket.');
             this.closeSocket(true);
           }
           this.remoteEndpoints = remoteEndpoints;
