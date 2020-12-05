@@ -1,7 +1,7 @@
 {
   "name": "msrp-node-lib",
   "title": "msrp-node-lib",
-  "version": "1.0.9-esapp",
+  "version": "1.0.10-esapp",
   "description": "A simple, intuitive MSRP JavaScript library",
   "author": {
     "email": "cwysong85@gmail.com",

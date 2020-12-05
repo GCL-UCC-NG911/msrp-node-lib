@@ -246,10 +246,12 @@ module.exports = function (MsrpSdk) {
     /**
      * Helper function for establishing connections when the SDP negotiation has been completed.
      */
-    _startConnection() {
+    startConnection() {
       // If the SDP negotiation has not been completed, return
       if (this.getHasNotRan || this.setHasNotRan) {
-        MsrpSdk.Logger.debug('[Session]: Unable to start connection yet. SDP negotiation in progress.');
+        if (!this.getHasNotRan || !this.setHasNotRan) {
+          MsrpSdk.Logger.debug('[Session]: Unable to start connection yet. SDP negotiation in progress.');
+        }
         return;
       }
 
@@ -259,7 +261,7 @@ module.exports = function (MsrpSdk) {
 
       // If the session has an active connection, return
       if (this.socket && !this.socket.destroyed) {
-        MsrpSdk.Logger.debug(`[Session]: _startConnection - Session ${this.sid} already has an active connection.`);
+        MsrpSdk.Logger.debug(`[Session]: startConnection - Session ${this.sid} already has an active connection.`);
         return;
       }
 
@@ -441,8 +443,7 @@ module.exports = function (MsrpSdk) {
             // Update session information
             this.localEndpoint = new MsrpSdk.URI(path);
 
-            // Start connection if needed
-            this._startConnection();
+            // Note: startConnection API must be invoked by application after SDP Answer is sent to peer
           })
           .catch(error => {
             MsrpSdk.Logger.error(`[Session]: An error ocurred while creating the local SDP. ${error}`);
@@ -519,7 +520,7 @@ module.exports = function (MsrpSdk) {
           this.acceptTypes = acceptTypes ? acceptTypes.split(/\s+/) : [];
 
           // Start connection if needed
-          this._startConnection();
+          this.startConnection();
         }
 
         resolve();
