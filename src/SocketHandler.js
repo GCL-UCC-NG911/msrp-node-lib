@@ -19,11 +19,8 @@ module.exports = function (MsrpSdk) {
   const pendingReports = new Map();
   const requestsSent = new Map();
 
-  const activeSenders = [];
-
   let socketsAuditInterval = null;
   let receiverCheckInterval = null;
-  let senderTimeout = null;
 
   function getSocketInfo(socket) {
     const socketAddr = socket.address() || {};
@@ -198,13 +195,14 @@ module.exports = function (MsrpSdk) {
       chunkSenders.set(sender.messageId, sender);
       MsrpSdk.Logger.debug(`[SocketHandler]: Created new sender for ${sender.messageId}. Num active senders: ${chunkSenders.size}`);
 
-      activeSenders.push({
-        sender,
-        socket,
-        onMessageSent
+      // Send request asynchronously
+      process.nextTick(() => {
+        sendNextRequest({
+          sender,
+          socket,
+          onMessageSent
+        });
       });
-
-      sendRequests();
     };
 
     /**
@@ -214,7 +212,7 @@ module.exports = function (MsrpSdk) {
      * @param {number} [status] The report status code.
      */
     socket.sendReport = function (messageId, status) {
-      MsrpSdk.Logger.info(`[SocketHandler]: Send REPORT for message ${messageId} with status ${status}`);
+      MsrpSdk.Logger.debug(`[SocketHandler]: Send REPORT for message ${messageId} with status ${status}`);
 
       const pendingData = pendingReports.get(messageId);
       if (!pendingData) {
@@ -345,7 +343,7 @@ module.exports = function (MsrpSdk) {
       const isBodilessMessage = !request.body;
       // Emit 'message' event asynchronously. Do not emit it for heartbeat messages or bodiless messages.
       if (!isHeartbeatMessage && !isBodilessMessage) {
-        setImmediate(() => {
+        process.nextTick(() => {
           try {
             session.emit('message', request, session);
           } catch (err) {
@@ -412,7 +410,7 @@ module.exports = function (MsrpSdk) {
     sendResponse(request, socket, toUri.uri, MsrpSdk.Status.OK);
 
     // Emit 'message' event asynchronously including the complete message.
-    setImmediate(() => {
+    process.nextTick(() => {
       try {
         session.emit('message', request, session);
       } catch (err) {
@@ -538,13 +536,7 @@ module.exports = function (MsrpSdk) {
   /**
    * Helper function for sending request
    */
-  function sendNextRequest() {
-    if (!activeSenders.length) {
-      return;
-    }
-
-    // Get first sender in list
-    const activeSender = activeSenders.shift();
+  function sendNextRequest(activeSender) {
     const { sender, socket, onMessageSent } = activeSender;
 
     // Check socket availability before writing
@@ -557,7 +549,6 @@ module.exports = function (MsrpSdk) {
     const msg = sender.getNextChunk();
     const encodeMsg = msg.encode();
 
-
     socket.write(encodeMsg, () => {
       if (msg.method === 'SEND') {
         requestsSent.set(msg.tid, sender.messageId);
@@ -569,34 +560,13 @@ module.exports = function (MsrpSdk) {
 
     // Check whether this sender has now completed
     if (sender.isSendComplete()) {
-      // Remove this sender from the active list
       if (typeof onMessageSent === 'function') {
         onMessageSent(sender.messageId);
       }
     } else {
-      // Add sender back to the queue
-      activeSenders.push(activeSender);
+      // Send next chunk in a different event cycle
+      setTimeout(sendNextRequest, 0, activeSender);
     }
-  }
-
-  function sendRequests() {
-    if (senderTimeout || !activeSenders.length) {
-      return;
-    }
-    // Send the requests asynchronously
-    senderTimeout = setTimeout(() => {
-      senderTimeout = null;
-      MsrpSdk.Logger.info(`Sending messages - Num pending requests: ${activeSenders.length}`);
-      // Send up to 5 messages at a time
-      for (let count = 0; count < 5 && activeSenders.length; count++) {
-        try {
-          sendNextRequest();
-        } catch (err) {
-          MsrpSdk.Logger.error('[SocketHandler]: Failed to send request.', err);
-        }
-      }
-      sendRequests();
-    }, 0);
   }
 
   /**
