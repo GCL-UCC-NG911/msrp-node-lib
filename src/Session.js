@@ -404,7 +404,7 @@ module.exports = function (MsrpSdk) {
 
         if (isSdpAnswer) {
           // This is an SDP Answer OR is the first SDP Offer, so set the local media descriptions
-          localSdp.media = this._getMediaDescriptions(msrpMedia, isSdpAnswer);
+          localSdp.media = this._getMediaDescriptions(msrpMedia);
         } else if (!localSdp.media.length) {
           msrpMedia.setAttribute('setup', MsrpSdk.Config.setup);
           localSdp.media = [msrpMedia];
