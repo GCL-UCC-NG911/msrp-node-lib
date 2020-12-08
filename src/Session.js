@@ -82,14 +82,11 @@ module.exports = function (MsrpSdk) {
 
     _getMediaDescriptions(localMsrpMedia) {
       // Return the corresponding media lines for the saved remote description
-      if (!this.remoteSdp) {
-        localMsrpMedia.setAttribute('setup', MsrpSdk.Config.setup);
-        return [localMsrpMedia];
-      }
       return this.remoteSdp.media.map(remoteMedia => {
         if (remoteMedia.isMsrp()) {
           const remoteSetup = remoteMedia.getAttributeValue('setup');
-          localMsrpMedia.setAttribute('setup', remoteSetup === 'active' || remoteSetup === 'actpass' ? 'passive' : 'active');
+          // If remote SDP Offer doesn't include "setup" parameter then it must act as "active" endpoint per RFC4975
+          localMsrpMedia.setAttribute('setup', remoteSetup === 'passive' ? 'active' : 'passive');
           return localMsrpMedia;
         }
         // Create corresponding SdpMedia with port 0
@@ -405,9 +402,12 @@ module.exports = function (MsrpSdk) {
           }
         }
 
-        if (isSdpAnswer || !localSdp.media.length) {
+        if (isSdpAnswer) {
           // This is an SDP Answer OR is the first SDP Offer, so set the local media descriptions
-          localSdp.media = this._getMediaDescriptions(msrpMedia);
+          localSdp.media = this._getMediaDescriptions(msrpMedia, isSdpAnswer);
+        } else if (!localSdp.media.length) {
+          msrpMedia.setAttribute('setup', MsrpSdk.Config.setup);
+          localSdp.media = [msrpMedia];
         } else {
           // This is a new SDP Offer. Set setup attribute based on config.
           msrpMedia.setAttribute('setup', MsrpSdk.Config.setup);
@@ -499,9 +499,8 @@ module.exports = function (MsrpSdk) {
           this.connectionSetup = 'active';
         }
 
-        this.setHasNotRan = false;
-
         // Update session information
+        this.setHasNotRan = false;
         this.remoteSdp = remoteSdp;
         this.remoteConnectionMode = this.remoteSdp.getMsrpConnectionMode();
         if (this.remoteConnectionMode === 'inactive') {
