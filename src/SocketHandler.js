@@ -33,12 +33,17 @@ module.exports = function (MsrpSdk) {
    * Socket handler
    * @param {object} socket Socket
    */
+  // eslint-disable-next-line max-lines-per-function
   const SocketHandler = function (socket) {
     let socketInfo = '';
     let bufferedData = '';
 
     // The sessionId for all MSRP sessions using the socket
     socket.sessions = new Set();
+
+    // Ignore max EventEmitter listeners default since there may be multiple sessions associated wih the
+    // same Socket and each Session instance registers a listener.
+    socket.setMaxListeners(0);
 
     // Set socket encoding so we get Strings in the 'data' event
     socket.setEncoding('utf8');
@@ -128,6 +133,7 @@ module.exports = function (MsrpSdk) {
     socket.on('close', () => {
       connectedSockets.delete(socket);
       pendingAssociations.delete(socket);
+      socket.sessions.clear();
       MsrpSdk.Logger.info(`[SocketHandler]: Socket closed. ${socketInfo}. Num active sockets: ${connectedSockets.size}`);
     });
 
