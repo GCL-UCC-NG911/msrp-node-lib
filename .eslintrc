@@ -1,4 +1,5 @@
 {
+  "reportUnusedDisableDirectives": true,
   "parserOptions": {
     "ecmaVersion": 2019,
     "sourceType": "script"
@@ -123,7 +124,7 @@
       "allowShortCircuit": true,
       "allowTernary": true
     }],
-    "no-unused-vars": [2, {"vars": "local"}],
+    "no-unused-vars": 2,
     "no-use-before-define": [2, { "functions": false, "classes": true, "variables": true }],
     "no-useless-backreference": 2,
     "no-useless-call": 2,

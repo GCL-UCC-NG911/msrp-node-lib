@@ -394,7 +394,6 @@ module.exports = function (MsrpSdk) {
       return null;
     }
 
-    // eslint-disable-next-line complexity
     parse(sdp) {
       let line, value;
 

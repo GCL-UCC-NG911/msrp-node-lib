@@ -1,7 +1,7 @@
 {
   "name": "msrp-node-lib",
   "title": "msrp-node-lib",
-  "version": "1.0.13-esapp",
+  "version": "1.0.14-esapp",
   "description": "A simple, intuitive MSRP JavaScript library",
   "author": {
     "email": "cwysong85@gmail.com",
@@ -12,13 +12,13 @@
     "url": "https://github.com/cwysong85/msrp-node-lib"
   },
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=14.0.0"
   },
   "dependencies": {
-    "portfinder": "1.0.28"
+    "portfinder": "1.0.32"
   },
   "devDependencies": {
-    "eslint": "7.18.0"
+    "eslint": "8.34.0"
   },
   "license": "MIT",
   "main": "src/MsrpSdk.js",
