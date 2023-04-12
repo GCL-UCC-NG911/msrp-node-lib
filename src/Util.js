@@ -7,7 +7,7 @@ module.exports = function (MsrpSdk) {
   function genRandomString(length) {
     return Math.random()
       .toString(36)
-      .substr(2, length);
+      .substring(2, 2 + length);
   }
 
   // MSRP Header Fields (https://www.iana.org/assignments/msrp-parameters/msrp-parameters.xhtml)

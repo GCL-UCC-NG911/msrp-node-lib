@@ -52,14 +52,14 @@ module.exports = function (MsrpSdk) {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       // If there is a body, there will be an extra CRLF between the headers and the body.
-      if (msg.substr(startIndex, 2) === lineEnd) {
+      if (msg.substring(startIndex, startIndex + 2) === lineEnd) {
         startIndex += 2;
         hasBody = true;
         break;
       }
 
       // If there is no body, we stop at the end-line.
-      if (msg.substr(startIndex, endLineNoFlagLength) === endLineNoFlag) {
+      if (msg.substring(startIndex, startIndex + endLineNoFlagLength) === endLineNoFlag) {
         break;
       }
 
@@ -325,10 +325,10 @@ module.exports = function (MsrpSdk) {
       type: splitValue.shift().trim(),
       param: {}
     };
-    for (let idx = 0; idx < splitValue.length; idx++) {
-      const splitParam = splitValue[idx].split('=');
+    for (const value of splitValue) {
+      const splitParam = value.split('=');
       if (splitParam.length !== 2) {
-        MsrpSdk.Logger.warn(`Unexpected Content-Disposition param: ${splitValue[idx]}`);
+        MsrpSdk.Logger.warn(`Unexpected Content-Disposition param: ${value}`);
         return false;
       }
       msgObj.contentDisposition.param[splitParam[0].trim()] = unq(splitParam[1].trim());

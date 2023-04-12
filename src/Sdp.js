@@ -319,7 +319,11 @@ module.exports = function (MsrpSdk) {
       }
       this.attributes.forEach(attr => {
         const aValue = attr.value === 0 ? '0' : attr.value;
-        m += `\r\na=${attr.name}${aValue ? `:${aValue}` : ''}`;
+        if (aValue) {
+          m += `\r\na=${attr.name}:${aValue}`;
+        } else {
+          m += `\r\na=${attr.name}`;
+        }
       });
 
       return m;
@@ -562,7 +566,11 @@ module.exports = function (MsrpSdk) {
       }
       this.attributes.forEach(attr => {
         const aValue = attr.value === 0 ? '0' : attr.value;
-        sdp += `a=${attr.name}${aValue ? `:${aValue}` : ''}\r\n`;
+        if (aValue) {
+          sdp += `a=${attr.name}:${aValue}\r\n`;
+        } else {
+          sdp += `a=${attr.name}\r\n`;
+        }
       });
       this.media.forEach(m => {
         sdp += `m=${m}\r\n`;

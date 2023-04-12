@@ -42,14 +42,14 @@ module.exports = function (MsrpSdk) {
       // If there's an "@" symbol in the authority, extract the user
       const atIndex = this.authority.indexOf('@');
       if (atIndex !== -1) {
-        this.user = this.authority.substr(0, atIndex);
-        this.authority = this.authority.substr(atIndex + 1);
+        this.user = this.authority.substring(0, atIndex);
+        this.authority = this.authority.substring(atIndex + 1);
       }
       // If there's an ":" symbol in the authority, extract the port
       const portSepIndex = this.authority.indexOf(':');
       if (portSepIndex !== -1) {
-        this.port = +this.authority.substr(portSepIndex + 1);
-        this.authority = this.authority.substr(0, portSepIndex);
+        this.port = +this.authority.substring(portSepIndex + 1);
+        this.authority = this.authority.substring(0, portSepIndex);
       }
       // Finally, separate the session ID from the transport
       const semicolonIndex = uri.indexOf(';', colonIndex + 3);
@@ -101,10 +101,7 @@ module.exports = function (MsrpSdk) {
       if (uri.sessionId !== this.sessionId) {
         return false;
       }
-      if (uri.transport.toLowerCase() !== this.transport.toLowerCase()) {
-        return false;
-      }
-      return true;
+      return uri.transport.toLowerCase() === this.transport.toLowerCase();
     }
   }
 

@@ -263,7 +263,8 @@ From-Path: ${this.fromPath.join(' ')}\r\n`;
     }
 
     encode() {
-      let msg = `MSRP ${this.tid} ${this.status}${this.comment ? ` ${this.comment}` : ''}\r\n\
+      const comment = this.comment ? ` ${this.comment}` : '';
+      let msg = `MSRP ${this.tid} ${this.status}${comment}\r\n\
 To-Path: ${this.toPath.join(' ')}\r\n\
 From-Path: ${this.fromPath.join(' ')}\r\n`;
 
