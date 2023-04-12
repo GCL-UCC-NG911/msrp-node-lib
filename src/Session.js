@@ -17,6 +17,8 @@ module.exports = function (MsrpSdk) {
 
   const SETUP_VALUES = ['active', 'actpass', 'passive'];
 
+  const HEARTBEAT_CONTENT_TYPE = 'text/x-msrp-heartbeat';
+
   const connRefusedMap = new Map();
   const blockedServers = new Map();
 
@@ -568,6 +570,9 @@ module.exports = function (MsrpSdk) {
         this.pendingSockets.push(socket);
         if (this.socket.destroyed) {
           this.closeSocket(false);
+        } else if (this.canSend(HEARTBEAT_CONTENT_TYPE)) {
+          MsrpSdk.Logger.info('[Session]: Send heartbeat message to confirm active socket is still connected');
+          this.sendMessage('HEARTBEAT', HEARTBEAT_CONTENT_TYPE);
         }
         return;
       }
@@ -666,14 +671,14 @@ module.exports = function (MsrpSdk) {
         return;
       }
 
-      if (this.socket && !this.canSend('text/x-msrp-heartbeat')) {
-        MsrpSdk.Logger.warn(`[Session]: Cannot start heartbeats for session ${this.sid}. Peer does not support 'text/x-msrp-heartbeat' content.`);
+      if (this.socket && !this.canSend(HEARTBEAT_CONTENT_TYPE)) {
+        MsrpSdk.Logger.warn(`[Session]: Cannot start heartbeats for session ${this.sid}. Peer does not support ${HEARTBEAT_CONTENT_TYPE} content.`);
         return;
       }
 
       let timedOut = false;
 
-      const msgQueued = this.sendMessage('HEARTBEAT', 'text/x-msrp-heartbeat', null, status => {
+      const msgQueued = this.sendMessage('HEARTBEAT', HEARTBEAT_CONTENT_TYPE, null, status => {
         if (timedOut) {
           return;
         }
