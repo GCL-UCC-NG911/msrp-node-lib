@@ -7,9 +7,14 @@
     "email": "cwysong85@gmail.com",
     "name": "Corey Wysong"
   },
+  "contributors": [
+    "Karina Sicuro (https://github.com/ksicuro)",
+    "Rodrigo Pastro (https://github.com/rpastro)",
+    "Walter Martins (https://github.com/wdmartins)"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/cwysong85/msrp-node-lib"
+    "url": "https://github.com/GCL-UCC-NG911/msrp-node-lib"
   },
   "engines": {
     "node": ">=14.0.0"
