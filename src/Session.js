@@ -570,7 +570,7 @@ module.exports = function (MsrpSdk) {
         this.pendingSockets.push(socket);
         if (this.socket.destroyed) {
           this.closeSocket(false);
-        } else if (this.canSend(HEARTBEAT_CONTENT_TYPE)) {
+        } else if (this.canSend(HEARTBEAT_CONTENT_TYPE, true)) {
           MsrpSdk.Logger.info('[Session]: Send heartbeat message to confirm active socket is still connected');
           this.sendMessage('HEARTBEAT', HEARTBEAT_CONTENT_TYPE);
         }
