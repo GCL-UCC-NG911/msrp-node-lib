@@ -565,9 +565,12 @@ module.exports = function (MsrpSdk) {
      */
     setSocket(socket, suppressSocketSet = false) {
       if (this.socket) {
-        // This coud be a replacement socket. Add to pending list.
-        MsrpSdk.Logger.info(`[Session]: Add pending socket for session ${this.sid}. ${socket.socketInfo}`);
-        this.pendingSockets.push(socket);
+        MsrpSdk.Logger.info(`[Session]: Current socket for session ${this.sid}. ${this.socket.socketInfo}, Destroyed = ${this.socket.destroyed}`);
+        if (!this.pendingSockets.includes(socket)) {
+          // This coud be a replacement socket. Add to pending list.
+          MsrpSdk.Logger.info(`[Session]: Add pending socket for session ${this.sid}. ${socket.socketInfo}`);
+          this.pendingSockets.push(socket);
+        }
         if (this.socket.destroyed) {
           this.closeSocket(false);
         } else if (this.canSend(HEARTBEAT_CONTENT_TYPE, true)) {
