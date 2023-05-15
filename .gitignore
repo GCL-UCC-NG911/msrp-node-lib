@@ -1,1 +1,9 @@
 node_modules
+
+# VS Code files
+# We do not commit settings.json to allow individual settings
+# Copy .vscode/settings.json.template to settings.json and customize as needed
+.vscode/settings.json
+*.code-workspace
+
+.DS_Store

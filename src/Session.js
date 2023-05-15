@@ -333,7 +333,12 @@ module.exports = function (MsrpSdk) {
         return false;
       }
 
-      const message = { body, contentType };
+      let message = { body, contentType };
+      if (contentType === HEARTBEAT_CONTENT_TYPE && MsrpSdk.Config.bodilessHeartbeat) {
+        // @ts-ignore
+        message = {};
+      }
+
       this.socket.sendMessage(this, message, onMessageSent, onReportReceived);
       return true;
     }

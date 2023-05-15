@@ -33,6 +33,7 @@ module.exports = function (config, logger) {
 
   MsrpSdk.Config = {
     acceptTypes: config.acceptTypes || 'text/plain',
+    bodilessHeartbeat: !!config.bodilessHeartbeat,
     enableHeartbeats: !!config.enableHeartbeats,
     forwardSessionEvents: !!config.forwardSessionEvents,
     heartbeatInterval: Math.max(Math.floor(config.heartbeatInterval) || DEFAULT_HEARTBEAT_INTERVAL, MIN_HEARTBEAT_INTERVAL),
