@@ -305,6 +305,10 @@ module.exports = function (MsrpSdk) {
         return false;
       }
 
+      if (contentType === HEARTBEAT_CONTENT_TYPE && MsrpSdk.Config.bodilessHeartbeat) {
+        return true;
+      }
+
       // Get the wildcard type, e.g. text/*
       const wildcardContentType = contentType.replace(/\/.*$/, '/*');
       const isTypeSupported = this.acceptTypes.some(type =>
@@ -333,10 +337,11 @@ module.exports = function (MsrpSdk) {
         return false;
       }
 
-      let message = { body, contentType };
+      let message;
       if (contentType === HEARTBEAT_CONTENT_TYPE && MsrpSdk.Config.bodilessHeartbeat) {
-        // @ts-ignore
         message = {};
+      } else {
+        message = { body, contentType };
       }
 
       this.socket.sendMessage(this, message, onMessageSent, onReportReceived);
@@ -771,7 +776,7 @@ module.exports = function (MsrpSdk) {
       this.stopHeartbeats();
       return this._connectSession()
         .then(() => {
-          this.startHeartbeats(true);
+          this.startHeartbeats(!MsrpSdk.Config.bodilessHeartbeat);
         });
     }
 
